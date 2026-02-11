@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MetaMask Debugger</title>
+</head>
+<body>
+    <h1>MetaMask Debugger</h1>
+    <p>Status: <span id="status">Checking...</span></p>
+    <button onclick="check()">Check Again</button>
+
+    <script>
+        function check() {
+            const status = document.getElementById('status');
+            if (typeof window.ethereum !== 'undefined') {
+                status.innerText = "✅ MetaMask Detected!";
+                status.style.color = "green";
+                console.log("Ethereum object:", window.ethereum);
+                
+                window.ethereum.request({ method: 'eth_chainId' })
+                    .then(chainId => {
+                        status.innerText += ` (Chain ID: ${chainId})`;
+                    })
+                    .catch(err => {
+                        status.innerText += ` (Error getting chain ID: ${err.message})`;
+                    });
+            } else {
+                status.innerText = "❌ MetaMask NOT Detected (window.ethereum is undefined)";
+                status.style.color = "red";
+            }
+        }
+        
+        // Check immediately
+        setTimeout(check, 1000);
+    </script>
+</body>
+</html>

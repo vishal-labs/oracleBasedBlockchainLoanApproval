@@ -1,0 +1,59 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Dependencies (will be installed in container)
+node_modules/
+frontend/node_modules/
+venv/
+env/
+__pycache__/
+
+# Build artifacts (will be generated in container)
+cache/
+artifacts/
+dist/
+build/
+frontend/dist/
+frontend/build/
+
+# Environment files (use Docker secrets/env vars instead)
+.env
+.env.*
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Documentation and non-runtime files
+README.md
+*.md
+docs/
+.github/
+
+# Test files
+test/
+*.test.js
+*.spec.js
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Local scripts (not needed in container)
+scripts/run_system.sh
+scripts/run_system_no_ens.sh
+
+# Machine learning models (may need to be included if pre-trained)
+# Uncomment if models are trained outside container
+# *.pkl
+# credit_model.pkl
