@@ -109,12 +109,12 @@ const LoanForm = ({ contract, account, onLoanRequested }) => {
                         </span>
                     </div>
                     <div className="flex gap-2 mt-2">
-                        {['1', '5', '10', '20'].map(val => (
+                        {[1, 5, 10, 20].map(val => (
                             <button
                                 key={val}
                                 type="button"
-                                onClick={() => setAmount(val)}
-                                className="btn-secondary text-xs px-3 py-1"
+                                onClick={() => setAmount(val.toString())}
+                                className="px-4 py-2 rounded-lg bg-brown-700 hover:bg-brown-600 text-cream-200 transition-all text-sm font-semibold"
                             >
                                 {val} ETH
                             </button>
@@ -126,16 +126,18 @@ const LoanForm = ({ contract, account, onLoanRequested }) => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="btn-primary w-full py-4 text-lg font-bold"
+                    className="btn-primary w-full py-4 text-lg relative overflow-hidden"
                 >
                     {loading ? (
-                        <span className="flex items-center justify-center gap-2">
-                            <span className="animate-shimmer">⏳</span> Processing...
+                        <span className="flex items-center justify-center gap-3">
+                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Processing Transaction...</span>
                         </span>
                     ) : (
-                        <span className="flex items-center justify-center gap-2">
-                            🚀 Submit Loan Request
-                        </span>
+                        '🚀 Submit Loan Request'
                     )}
                 </button>
 
@@ -148,18 +150,15 @@ const LoanForm = ({ contract, account, onLoanRequested }) => {
 
                 {/* Info Box */}
                 <div className="glass-panel-brown p-4 border-l-4 border-amber-500">
-                    <h4 className="text-amber-400 font-semibold text-sm mb-2">
-                        📋 Requirements
-                    </h4>
-                    <ul className="text-xs space-y-1 text-beige-500">
-                        <li>• Minimum balance: 0.01 ETH</li>
-                        <li>• Transaction history required</li>
-                        <li>• AI will analyze your creditworthiness</li>
-                        <li>• Decision typically within 30 seconds</li>
+                    <p className="text-xs text-cream-200 font-semibold mb-2">Requirements:</p>
+                    <ul className="text-xs text-beige-500 space-y-1">
+                        <li>• Minimum 0.01 ETH balance required</li>
+                        <li>• Must have transaction history</li>
+                        <li>• ENS name optional (boosts approval odds)</li>
                     </ul>
                 </div>
             </form>
-        </div>
+        </div >
     );
 };
 

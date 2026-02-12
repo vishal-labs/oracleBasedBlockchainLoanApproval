@@ -172,6 +172,47 @@ const Home = () => {
                       🌐 Register ENS Names
                     </button>
                   </a>
+
+                  {/* Add 50 ETH Button */}
+                  <button
+                    onClick={async () => {
+                      try {
+                        const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
+                        const funder = await provider.getSigner(0);
+                        const tx = await funder.sendTransaction({
+                          to: account,
+                          value: ethers.parseEther("50")
+                        });
+                        console.log("Funding tx:", tx.hash);
+                        await tx.wait();
+                        alert("✅ Added 50 ETH to your account!");
+                      } catch (err) {
+                        console.error(err);
+                        alert("❌ Failed to add ETH: " + err.message);
+                      }
+                    }}
+                    className="btn-secondary w-full"
+                  >
+                    💰 Add 50 ETH (Testnet)
+                  </button>
+
+                  {/* Check Balance Button */}
+                  <button
+                    onClick={async () => {
+                      try {
+                        const provider = new ethers.BrowserProvider(window.ethereum);
+                        const balance = await provider.getBalance(account);
+                        const balanceEth = ethers.formatEther(balance);
+                        alert(`💵 Current Balance: ${balanceEth} ETH`);
+                      } catch (err) {
+                        console.error(err);
+                        alert("❌ Failed to check balance: " + err.message);
+                      }
+                    }}
+                    className="btn-secondary w-full"
+                  >
+                    💵 Check ETH Balance
+                  </button>
                 </div>
               </div>
             </div>
