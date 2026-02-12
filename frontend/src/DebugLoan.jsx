@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import lendingOracleArtifact from '../../artifacts/contracts/LendingOracle.sol/LendingOracle.json';
 import contractConfig from './contract-config.json';
@@ -13,133 +13,176 @@ const DebugLoan = () => {
     const [loading, setLoading] = useState(false);
     const [logs, setLogs] = useState([]);
 
-    const addLog = (msg) => setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
+    const addLog = (msg, type = 'info') => {
+        setLogs(prev => [{ msg, type, time: new Date().toLocaleTimeString() }, ...prev]);
+    };
 
     const handleDebugSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        addLog(`Initiating debug request for ${borrower}...`);
+        addLog(`Initiating debug request for ${borrower}...`, 'info');
 
         try {
-            // Connect to local node directly (Account #0 is deployer/oracle)
             const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
-            const signer = await provider.getSigner(0); // Get Account #0
+            const signer = await provider.getSigner(0);
 
             const contract = new ethers.Contract(CONTRACT_ADDRESS, lendingOracleArtifact.abi, signer);
 
-            addLog(`Using Oracle Account: ${signer.address}`);
-            addLog(`Test Balance: ${balanceEth} ETH`);
+            addLog(`Using Oracle Account: ${signer.address}`, 'success');
+            addLog(`Test Balance: ${balanceEth} ETH`, 'info');
 
             const amountWei = ethers.parseEther(amount);
             const balanceWei = ethers.parseEther(balanceEth);
 
-            // Call the DEBUG function with balance
             const tx = await contract.debugRequestLoanWithBalance(borrower, ensName, amountWei, balanceWei);
-            addLog(`Tx Sent: ${tx.hash}`);
+            addLog(`Transaction sent: ${tx.hash}`, 'success');
 
             await tx.wait();
-            addLog(`✅ Tx Confirmed! Waiting for Oracle response...`);
+            addLog(`✅ Transaction confirmed! Waiting for Oracle...`, 'success');
 
-            // Listen for completion
             contract.once("LoanProcessed", (requestId, borrowerAddr, score, approved, rate) => {
                 if (borrowerAddr.toLowerCase() === borrower.toLowerCase()) {
-                    addLog(`🔔 LOAN PROCESSED!`);
-                    addLog(`   Score: ${score}`);
-                    addLog(`   Approved: ${approved ? "✅ YES" : "❌ NO"}`);
-                    addLog(`   Rate: ${Number(rate) / 100}%`);
+                    addLog(`🎉 LOAN PROCESSED!`, 'success');
+                    addLog(`Credit Score: ${score}`, 'info');
+                    addLog(`Status: ${approved ? "✅ APPROVED" : "❌ REJECTED"}`, approved ? 'success' : 'error');
+                    addLog(`Interest Rate: ${Number(rate) / 100}%`, 'info');
                     setLoading(false);
                 }
             });
 
         } catch (err) {
-            console.error(err);
-            addLog(`❌ Error: ${err.reason || err.message}`);
+            addLog(`❌ Error: ${err.message}`, 'error');
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-slate-900 text-slate-200 p-6 font-sans">
-            <div className="max-w-2xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold text-yellow-500">🛠️ Developer Test Page</h1>
-                    <a href="/" className="text-blue-400 hover:underline">← Back to App</a>
-                </div>
-
-                <div className="bg-slate-800 p-6 rounded-lg shadow-lg mb-6 border border-yellow-600/30">
-                    <form onSubmit={handleDebugSubmit} className="space-y-4">
+        <div className="min-h-screen p-6 animate-fade-in">
+            <div className="max-w-5xl mx-auto">
+                {/* Header */}
+                <header className="glass-panel p-6 mb-8">
+                    <div className="flex justify-between items-center">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Simulated Borrower Address</label>
-                            <input
-                                type="text"
-                                value={borrower}
-                                onChange={(e) => setBorrower(e.target.value)}
-                                placeholder="0x..."
-                                className="w-full p-2 rounded bg-slate-700 border border-slate-600 font-mono"
-                                required
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setBorrower(ethers.Wallet.createRandom().address)}
-                                className="text-xs text-blue-400 mt-1 hover:text-blue-300"
-                            >
-                                Generate Random Address
-                            </button>
+                            <h1 className="text-3xl font-bold text-highlight mb-2 flex items-center gap-2">
+                                <span>🧪</span> Debug Loan Request
+                            </h1>
+                            <p className="text-beige-500 text-sm">
+                                Test loans with custom balances (Developer Tool)
+                            </p>
                         </div>
+                        <a href="/" className="btn-secondary">
+                            ← Back to App
+                        </a>
+                    </div>
+                </header>
 
-                        <div className="grid grid-cols-2 gap-4">
+                <div className="grid lg:grid-cols-2 gap-8">
+                    {/* Form */}
+                    <div className="glass-panel p-6">
+                        <h2 className="text-xl font-bold text-highlight mb-6">Test Parameters</h2>
+
+                        <form onSubmit={handleDebugSubmit} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Loan Amount (ETH)</label>
+                                <label className="block text-sm font-semibold text-cream-200 mb-2">
+                                    Borrower Address
+                                </label>
+                                <input
+                                    type="text"
+                                    value={borrower}
+                                    onChange={(e) => setBorrower(e.target.value)}
+                                    placeholder="0x..."
+                                    className="w-full"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-cream-200 mb-2">
+                                    ENS Name <span className="text-beige-500 font-normal">(Optional)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={ensName}
+                                    onChange={(e) => setEnsName(e.target.value)}
+                                    placeholder="name.eth"
+                                    className="w-full"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-cream-200 mb-2">
+                                    Loan Amount (ETH)
+                                </label>
                                 <input
                                     type="number"
-                                    step="0.1"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
-                                    className="w-full p-2 rounded bg-slate-700 border border-slate-600"
+                                    step="0.01"
+                                    min="0.01"
+                                    className="w-full"
+                                    required
                                 />
                             </div>
+
                             <div>
-                                <label className="block text-sm font-medium mb-1">Test Balance (ETH)</label>
+                                <label className="block text-sm font-semibold text-cream-200 mb-2">
+                                    Simulated Balance (ETH)
+                                </label>
                                 <input
                                     type="number"
-                                    step="0.1"
                                     value={balanceEth}
                                     onChange={(e) => setBalanceEth(e.target.value)}
-                                    className="w-full p-2 rounded bg-slate-700 border border-slate-600"
-                                    title="Simulated ETH balance for AI prediction"
+                                    step="0.1"
+                                    className="w-full"
+                                    required
                                 />
+                                <p className="text-xs text-beige-500 mt-1">
+                                    Override actual wallet balance for testing
+                                </p>
                             </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="btn-primary w-full py-4"
+                            >
+                                {loading ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <span className="animate-shimmer">⏳</span> Processing...
+                                    </span>
+                                ) : (
+                                    '🚀 Submit Debug Request'
+                                )}
+                            </button>
+                        </form>
+                    </div>
+
+                    {/* Console */}
+                    <div className="glass-panel p-6">
+                        <h2 className="text-xl font-bold text-highlight mb-6 flex items-center gap-2">
+                            <span>📟</span> Console Output
+                        </h2>
+                        <div className="bg-black/50 p-4 rounded-lg font-mono text-sm h-[500px] overflow-y-auto border border-brown-600">
+                            {logs.length === 0 && (
+                                <span className="text-beige-500">Waiting for submit...</span>
+                            )}
+                            {logs.map((log, i) => (
+                                <div
+                                    key={i}
+                                    className={`mb-2 pb-2 border-b border-brown-800/50 last:border-0 animate-fade-in ${log.type === 'error' ? 'text-red-400' :
+                                            log.type === 'success' ? 'text-amber-400' :
+                                                'text-cream-200'
+                                        }`}
+                                    style={{ animationDelay: `${i * 30}ms` }}
+                                >
+                                    <span className="text-beige-500">[{log.time}]</span> {log.msg}
+                                </div>
+                            ))}
                         </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">ENS Name (Optional)</label>
-                            <input
-                                type="text"
-                                value={ensName}
-                                onChange={(e) => setEnsName(e.target.value)}
-                                placeholder="vitalik.eth"
-                                className="w-full p-2 rounded bg-slate-700 border border-slate-600"
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className={`w-full py-3 rounded font-bold ${loading ? 'bg-slate-600' : 'bg-yellow-600 hover:bg-yellow-500'}`}
-                        >
-                            {loading ? 'Processing...' : '⚡ Trigger Debug Request'}
-                        </button>
-                    </form>
+                    </div>
                 </div>
-
-                <div className="bg-black/50 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto border border-slate-700">
-                    {logs.length === 0 && <span className="text-slate-500">Waiting for user action...</span>}
-                    {logs.map((log, i) => (
-                        <div key={i} className="mb-1 border-b border-slate-800/50 pb-1 last:border-0">{log}</div>
-                    ))}
-                </div>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 };
 

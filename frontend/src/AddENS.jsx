@@ -46,28 +46,24 @@ const AddENS = () => {
         addLog(`Registering ${ensName} → ${address}...`, 'info');
 
         try {
-            // Connect to local Hardhat node using deployer account (Account #0)
             const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
-            const signer = await provider.getSigner(0); // Oracle/deployer account
+            const signer = await provider.getSigner(0);
 
             const mockENS = new ethers.Contract(MOCK_ENS_ADDRESS, mockENSArtifact.abi, signer);
             const mockResolver = new ethers.Contract(MOCK_RESOLVER_ADDRESS, mockResolverArtifact.abi, signer);
 
             const node = namehash(ensName);
 
-            // Step 1: Set resolver
             addLog('Setting resolver...', 'info');
             const tx1 = await mockENS.setResolver(node, MOCK_RESOLVER_ADDRESS);
             await tx1.wait();
             addLog('✅ Resolver set', 'success');
 
-            // Step 2: Set address
             addLog('Setting address record...', 'info');
             const tx2 = await mockResolver.setAddr(node, address);
             await tx2.wait();
             addLog('✅ Address record set', 'success');
 
-            // Step 3: Add social media records if requested
             if (addSocial) {
                 addLog('Adding social media records...', 'info');
 
@@ -82,7 +78,6 @@ const AddENS = () => {
 
             addLog(`🎉 ${ensName} successfully registered!`, 'success');
 
-            // Reset form
             setEnsName('');
             setAddress('');
 
@@ -95,97 +90,139 @@ const AddENS = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-900 text-slate-200 p-6 font-sans">
-            <div className="max-w-3xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold text-green-500">🌐 Register ENS Names</h1>
-                    <a href="/" className="text-blue-400 hover:underline">← Back to App</a>
-                </div>
-
-                <div className="bg-slate-800 p-6 rounded-lg shadow-lg mb-6 border border-green-600/30">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="min-h-screen p-6 animate-fade-in">
+            <div className="max-w-4xl mx-auto">
+                {/* Header */}
+                <header className="glass-panel p-6 mb-8">
+                    <div className="flex justify-between items-center">
                         <div>
-                            <label className="block text-sm font-medium mb-1">ENS Name</label>
+                            <h1 className="text-3xl font-bold text-highlight mb-2 flex items-center gap-2">
+                                <span>🌐</span> Register ENS Names
+                            </h1>
+                            <p className="text-beige-500 text-sm">
+                                Register .eth names on localhost for testing
+                            </p>
+                        </div>
+                        <a href="/" className="btn-secondary">
+                            ← Back to App
+                        </a>
+                    </div>
+                </header>
+
+                {/* Main Form */}
+                <div className="glass-panel p-8 mb-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* ENS Name */}
+                        <div>
+                            <label className="block text-sm font-semibold text-cream-200 mb-2">
+                                ENS Name
+                            </label>
                             <input
                                 type="text"
                                 value={ensName}
                                 onChange={(e) => setEnsName(e.target.value)}
                                 placeholder="e.g., myname.eth"
-                                className="w-full p-2 rounded bg-slate-700 border border-slate-600 font-mono"
+                                className="w-full"
                                 required
                             />
-                            <p className="text-xs text-slate-400 mt-1">Must end with .eth</p>
+                            <p className="text-xs text-beige-500 mt-1">
+                                Must end with .eth
+                            </p>
                         </div>
 
+                        {/* Wallet Address */}
                         <div>
-                            <label className="block text-sm font-medium mb-1">Wallet Address</label>
-                            <div className="flex gap-2">
+                            <label className="block text-sm font-semibold text-cream-200 mb-2">
+                                Wallet Address
+                            </label>
+                            <div className="flex gap-3">
                                 <input
                                     type="text"
                                     value={address}
                                     onChange={(e) => setAddress(e.target.value)}
                                     placeholder="0x..."
-                                    className="flex-1 p-2 rounded bg-slate-700 border border-slate-600 font-mono"
+                                    className="flex-1"
                                     required
                                 />
                                 <button
                                     type="button"
                                     onClick={generateRandomAddress}
-                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded font-semibold transition"
+                                    className="btn-secondary px-6"
                                 >
                                     🎲 Random
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        {/* Social Media Toggle */}
+                        <div className="glass-panel-brown p-4 rounded-lg flex items-center gap-3">
                             <input
                                 type="checkbox"
                                 id="addSocial"
                                 checked={addSocial}
                                 onChange={(e) => setAddSocial(e.target.checked)}
-                                className="w-4 h-4"
+                                className="w-5 h-5 accent-amber-500 cursor-pointer"
                             />
-                            <label htmlFor="addSocial" className="text-sm">
+                            <label htmlFor="addSocial" className="text-sm text-cream-200 cursor-pointer flex-1">
                                 Add social media records (Twitter & GitHub)
+                                <span className="block text-xs text-amber-400 mt-1">
+                                    +50 credit score bonus
+                                </span>
                             </label>
                         </div>
 
+                        {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full py-3 rounded font-bold ${loading ? 'bg-slate-600' : 'bg-green-600 hover:bg-green-500'}`}
+                            className="btn-primary w-full py-4 text-lg"
                         >
-                            {loading ? 'Registering...' : '⚡ Register ENS Name'}
+                            {loading ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <span className="animate-shimmer">⏳</span> Registering...
+                                </span>
+                            ) : (
+                                '⚡ Register ENS Name'
+                            )}
                         </button>
-                    </form>
 
-                    <div className="mt-4 p-3 bg-blue-900/30 border border-blue-700 rounded text-sm">
-                        <p className="font-semibold mb-1">ℹ️ How it works:</p>
-                        <ul className="text-xs space-y-1 text-slate-300">
-                            <li>• Registers ENS name on localhost MockENS contract</li>
-                            <li>• You can then use this ENS name in loan requests</li>
-                            <li>• Social records give +50 credit score bonus</li>
-                            <li>• Only works on Hardhat Localhost network</li>
-                        </ul>
-                    </div>
+                        {/* Info Box */}
+                        <div className="glass-panel-brown p-4 border-l-4 border-amber-500">
+                            <h4 className="text-amber-400 font-semibold text-sm mb-2">
+                                ℹ️ How it works
+                            </h4>
+                            <ul className="text-xs space-y-1 text-beige-500">
+                                <li>• Registers ENS name on localhost MockENS contract</li>
+                                <li>• You can then use this ENS name in loan requests</li>
+                                <li>• Social records give +50 credit score bonus</li>
+                                <li>• Only works on Hardhat Localhost network</li>
+                            </ul>
+                        </div>
+                    </form>
                 </div>
 
-                {/* Logs */}
-                <div className="bg-black/50 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto border border-slate-700">
-                    <h3 className="text-slate-400 mb-2 font-sans">Console</h3>
-                    {logs.length === 0 && <span className="text-slate-500">Waiting for action...</span>}
-                    {logs.map((log, i) => (
-                        <div
-                            key={i}
-                            className={`mb-1 border-b border-slate-800/50 pb-1 last:border-0 ${log.type === 'error' ? 'text-red-400' :
-                                log.type === 'success' ? 'text-green-400' :
-                                    'text-slate-300'
-                                }`}
-                        >
-                            [{log.timestamp}] {log.msg}
-                        </div>
-                    ))}
+                {/* Console Logs */}
+                <div className="glass-panel p-6">
+                    <h3 className="text-highlight font-bold mb-4 flex items-center gap-2">
+                        <span>📟</span> Console Output
+                    </h3>
+                    <div className="bg-black/50 p-4 rounded-lg font-mono text-sm h-80 overflow-y-auto border border-brown-600">
+                        {logs.length === 0 && (
+                            <span className="text-beige-500">Waiting for action...</span>
+                        )}
+                        {logs.map((log, i) => (
+                            <div
+                                key={i}
+                                className={`mb-2 pb-2 border-b border-brown-800/50 last:border-0 animate-fade-in ${log.type === 'error' ? 'text-red-400' :
+                                        log.type === 'success' ? 'text-amber-400' :
+                                            'text-cream-200'
+                                    }`}
+                                style={{ animationDelay: `${i * 30}ms` }}
+                            >
+                                <span className="text-beige-500">[{log.timestamp}]</span> {log.msg}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

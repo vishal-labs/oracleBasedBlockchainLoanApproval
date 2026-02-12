@@ -203,7 +203,7 @@ def check_social_media_links(ens_name):
     # Mock Implementation for MVP
     # In production, we would query the ENS Text Records
     # Simulating a random probability of having valid social links
-    is_linked = np.random.random() > 0.3  # 70% chance of success
+    is_linked = np.random.random() > 0.6  # 40% chance of success
     
     platforms = []
     if is_linked:
@@ -406,9 +406,9 @@ def handle_loan_request(event):
     interest_rate_bps = int(loan_data['base_interest'] * 100)
     
     if approved:
-        print(f"✅ LOAN APPROVED")
+        print(f"LOAN APPROVED")
     else:
-        print(f"❌ LOAN REJECTED")
+        print(f"LOAN REJECTED")
         
     # 5. Submit to Blockchain (Phase 3/2)
     submit_fulfillment(request_id, credit_score, interest_rate_bps, approved)
@@ -418,7 +418,7 @@ def submit_fulfillment(request_id, credit_score, interest_rate_bps, approved):
     Send transaction to fulfill request
     """
     try:
-        print("📝 Submitting fulfillment to blockchain...")
+        print(" Submitting fulfillment to blockchain...")
         
         # Build transaction
         tx = lending_contract.functions.fulfillLoanRequest(
@@ -444,12 +444,12 @@ def submit_fulfillment(request_id, credit_score, interest_rate_bps, approved):
         # Wait for receipt
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         if receipt.status == 1:
-            print("✅ Transaction confirmed!")
+            print("Transaction confirmed!")
         else:
-            print("❌ Transaction failed!")
+            print(" Transaction failed!")
             
     except Exception as e:
-        print(f"❌ Submission Error: {e}")
+        print(f"Submission Error: {e}")
 
 # ============= EVENT LISTENING =============
 
@@ -476,10 +476,10 @@ def event_loop():
                 
             time.sleep(2)
         except KeyboardInterrupt:
-            print("\n🛑 Oracle stopped by user")
+            print("\nOracle stopped by user")
             break
         except Exception as e:
-            print(f"⚠️ Polling Error: {e}")
+            print(f"Polling Error: {e}")
             time.sleep(2)
 
 if __name__ == "__main__":
