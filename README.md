@@ -13,3 +13,11 @@ Use the MetaMask Extension for wallets and connect the localhost HardHat version
 
 ---
 All the approvals and rejections are reflected in the backend terminal
+
+
+---
+
+### Demo
+
+[![Demo Video](https://img.youtube.com/vi/Rzk7WOrwP2c/0.jpg)](https://youtu.be/Rzk7WOrwP2c)
+
